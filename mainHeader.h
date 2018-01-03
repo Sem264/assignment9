@@ -3,29 +3,27 @@
 
 typedef struct{
     char name[20];
+    char *remarks;
     int age;
     float weight;
-    char *remarks;
 }personalData;
 
-personalData getPersonDesc(char *line);
-int readData(personalData *data, int len);
-int getOldestPersen(personalData data[]);
-int getSlimmestPersen(personalData data[], int len);
-char* checkInput(char *lineInput);
-void printInfo(personalData ar[], int idx, char *msgOk, char * msgbad);
-int checkName(char *token);
-int checkAge(char *token);
-int checkWeight(char *token);
-char* getName(char *token);
-int calculateAge(char *token);
-void checkValidity(char *token, personalData *singleRecord);
-float calculateWeight(char *token);
-void freeAllRemarks(personalData *data, int length);
-void printInfo(personalData ar[], int idx, char *msgOk, char * msgBad);
-int getOldestPerson(personalData data[], int length);
-int getSlimmestPerson(personalData data[], int length);
-void setUpSingleRecord(personalData *singleRecord);
-
+personalData* getPersonPtr(char * line);
+int checkToken(char *token, int *controller);
+int isName(char *token);
+int isAge(char *token);
+int isWeight(char *token);
+void calculateToken(char *token, int type, personalData *singlePerson);
+int deriveAge(char *token);
+float deriveWeight(char *token);
+char *deriveRemarks(char *token);
+void readPtrData(personalData **multipleRecords, char *lineInput, int index);
+void freeAllPointers(personalData **multipleRecords, int index);
+void printPtrData(personalData **multipleRecords, int len);
+void printData(personalData **multipleRecords, int len);
+void weightSort(personalData **multipleRecords, int len);
+void remarksSort(personalData **multipleRecords, int len);
+void sortRecords(personalData **multipleRecords);
+//int cmpfunc(const void **a, const void **b);
 
 #endif // MAINHEADER_H_INCLUDED

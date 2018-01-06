@@ -84,8 +84,8 @@ char *deriveRemarks(char *token){
     while(token[i]!='\0'){
         i++;
     }
-    char *remarksPtr = malloc(sizeof(char)*i);
-    strncpy(remarksPtr,token,i);
+    char *remarksPtr = malloc(sizeof(char)*(i+1));
+    strncpy(remarksPtr,token,i+1);
     return remarksPtr;
 }
 

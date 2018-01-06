@@ -17,8 +17,9 @@ int main()
         readPtrData(multipleRecords, lineInput, index);
         index++;
     }
-   // multipleRecords[--index]->remarks = NULL;
-    printPtrData(multipleRecords, index); //was ++index to negate prev --index
+    strncpy(lineInput,"0 remarks;",sizeof("0 remarks;"));
+    multipleRecords[index] = getPersonPtr(lineInput);
+    printPtrData(multipleRecords); //, index
     weightSort(multipleRecords, index);
     remarksSort(multipleRecords, index);
     freeAllPointers(multipleRecords, index);

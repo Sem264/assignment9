@@ -8,14 +8,11 @@ void readPtrData(personalData **multipleRecords, char *lineInput, int index){
     multipleRecords[index] = getPersonPtr(lineInput);
 }
 
-void printPtrData(personalData **multipleRecords, int len){
-    int i;
-    for(i = 0; i<len; i++){
-        //if((i+1)==len){
-          //  printf("%s: Age - %i, Weight - %lf, Remarks - 0\n", multipleRecords[i]->name, multipleRecords[i]->age, multipleRecords[i]->weight);
-        //}else{
-            printf("%s: Age - %i, Weight - %lf, Remarks - %s\n", multipleRecords[i]->name, multipleRecords[i]->age, multipleRecords[i]->weight, multipleRecords[i]->remarks);
-        //}
+void printPtrData(personalData **multipleRecords){ //, int len
+    int i = 0;
+    while(multipleRecords[i]->remarks!=NULL){
+        printf("%s: Age - %i, Weight - %0.1lf, Remarks - %s\n", multipleRecords[i]->name, multipleRecords[i]->age, multipleRecords[i]->weight, multipleRecords[i]->remarks);
+        i++;
     }
 }
 

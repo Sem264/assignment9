@@ -71,19 +71,18 @@ bool deleteTail(List& l, int &oldTail){
         l.head = NULL;
         return true;
     }
-    if(l.head!=NULL && l.initializedL == 1){
-        Element *beforeInspectedElem = l.head;
-        Element *elementInspected = l.head->next;
-        while(elementInspected->next!=NULL){
-            beforeInspectedElem = elementInspected;
-            elementInspected = elementInspected->next;
-        }
-        oldTail = elementInspected->value;
-        delete elementInspected;
-        elementInspected = NULL;
-        beforeInspectedElem->next = NULL;
-        return true;
+    Element *beforeInspectedElem = l.head;
+    Element *elementInspected = l.head->next;
+    while(elementInspected->next!=NULL){
+        beforeInspectedElem = elementInspected;
+        elementInspected = elementInspected->next;
     }
+    oldTail = elementInspected->value;
+    delete elementInspected;
+    elementInspected = NULL;
+    beforeInspectedElem->next = NULL;
+    beforeInspectedElem = NULL;
+    return true;
 }
 
 int findPosOfValue(List& l, int value){
@@ -317,4 +316,3 @@ int main(){
 		cout << "wrong argument in test: " << command << endl;
 	}
 }
-

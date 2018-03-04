@@ -5,13 +5,13 @@
 
 using namespace std;
 
-typedef struct Element{
+struct Element{
     int value;
     struct Element *next;
-}ElementLL;
+};
 
 struct List{
-    ElementLL *head;
+    Element *head;
 };
 
 void init(List& l){
@@ -19,28 +19,30 @@ void init(List& l){
 }
 
 void insertHead(List& l, int x){
-    ElementLL *newEl = new ElementLL;
+    Element *newEl = new Element;
     newEl->value = x;
     newEl->next = l.head;
     l.head = newEl;
+    newEl = NULL;
 }
 
 bool deleteHead(List& l, int &oldHead){
     if(l.head!=NULL){
         oldHead = l.head->value;
-        ElementLL *oldHeadPtr = l.head;
+        Element *oldHeadPtr = l.head;
         l.head = l.head->next;
         delete oldHeadPtr;
+        oldHeadPtr = NULL;
         return true;
     }
     return false;
 }
 
 void insertTail(List& l, int x){
-    ElementLL *newEl = new ElementLL;
+    Element *newEl = new Element;
     newEl->next = NULL;
     newEl->value = x;
-    ElementLL *elementInspected = l.head;
+    Element *elementInspected = l.head;
     if(l.head!=NULL){
         while(elementInspected->next!=NULL){
             elementInspected = elementInspected->next;
@@ -49,6 +51,7 @@ void insertTail(List& l, int x){
     }else{
         l.head = newEl;
     }
+    newEl = NULL;
 }
 
 bool deleteTail(List& l, int &oldTail){
@@ -60,8 +63,8 @@ bool deleteTail(List& l, int &oldTail){
         l.head = NULL;
         return true;
     }
-    ElementLL *beforeInspectedElem = NULL;
-    ElementLL *elementInspected = l.head;
+    Element *beforeInspectedElem = l.head;
+    Element *elementInspected = l.head->next;
     while(elementInspected->next!=NULL){
         beforeInspectedElem = elementInspected;
         elementInspected = elementInspected->next;
@@ -74,7 +77,7 @@ bool deleteTail(List& l, int &oldTail){
 }
 
 int findPosOfValue(List& l, int value){
-    ElementLL *elementInspected = l.head;
+    Element *elementInspected = l.head;
     int i = 0;
     while(elementInspected->next!=NULL){
         if(elementInspected->value == value){
@@ -95,8 +98,8 @@ bool deleteValue(List& l, int value){
             l.head = l.head->next;
             return true;
         }
-        ElementLL *elementInspected = l.head;
-        ElementLL *beforeInspectedElem = NULL;
+        Element *elementInspected = l.head;
+        Element *beforeInspectedElem = NULL;
         while(elementInspected->next!=NULL){
             if(elementInspected->value == value){
                 beforeInspectedElem->next = elementInspected->next;
@@ -119,7 +122,7 @@ bool deleteValue(List& l, int value){
 
 bool atPosition(List& l, int pos, int &value){
     if(l.head != NULL){
-        ElementLL *elementInspected = l.head;
+        Element *elementInspected = l.head;
         int i = 0;
         while(elementInspected->next!=NULL){
             if(i == pos){
@@ -139,19 +142,19 @@ bool atPosition(List& l, int pos, int &value){
 
 void showListFromHead(List& l){
     if(l.head!=NULL){
-        ElementLL *elementInspected = l.head;
+        Element *elementInspected = l.head;
         while(elementInspected->next!=NULL){
             cout << elementInspected->value << ",";
             elementInspected = elementInspected->next;
         }
-        cout << elementInspected->value <<endl;
+        cout << elementInspected->value << "," << endl;
     }
 }
 
 void clearList(List& l){
-    ElementLL *elementInspected = l.head;
+    Element *elementInspected = l.head;
     l.head = NULL;
-    ElementLL *nextInspected = NULL;
+    Element *nextInspected = NULL;
     while(elementInspected->next!=NULL){
         nextInspected = elementInspected->next;
         delete elementInspected;

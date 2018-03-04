@@ -11,23 +11,27 @@ struct Element{
 };
 
 struct List{
+    int initializedL;
     Element *head;
 };
 
 void init(List& l){
+    l.initializedL = 1;
     l.head = NULL;
 }
 
 void insertHead(List& l, int x){
-    Element *newEl = new Element;
-    newEl->value = x;
-    newEl->next = l.head;
-    l.head = newEl;
-    newEl = NULL;
+    if(l.initializedL == 1){
+        Element *newEl = new Element;
+        newEl->value = x;
+        newEl->next = l.head;
+        l.head = newEl;
+        newEl = NULL;
+    }
 }
 
 bool deleteHead(List& l, int &oldHead){
-    if(l.head!=NULL){
+    if(l.head!=NULL && l.initializedL == 1){
         oldHead = l.head->value;
         Element *oldHeadPtr = l.head;
         l.head = l.head->next;
@@ -39,61 +43,69 @@ bool deleteHead(List& l, int &oldHead){
 }
 
 void insertTail(List& l, int x){
-    Element *newEl = new Element;
-    newEl->next = NULL;
-    newEl->value = x;
-    Element *elementInspected = l.head;
-    if(l.head!=NULL){
-        while(elementInspected->next!=NULL){
-            elementInspected = elementInspected->next;
+    if(l.initializedL == 1){
+        Element *newEl = new Element;
+        newEl->next = NULL;
+        newEl->value = x;
+        Element *elementInspected = l.head;
+        if(l.head!=NULL){
+            while(elementInspected->next!=NULL){
+                elementInspected = elementInspected->next;
+            }
+            elementInspected->next = newEl;
+        }else{
+            l.head = newEl;
         }
-        elementInspected->next = newEl;
-    }else{
-        l.head = newEl;
+        newEl = NULL;
     }
-    newEl = NULL;
 }
 
 bool deleteTail(List& l, int &oldTail){
-    if(l.head == NULL)
+    if(l.initializedL != 1)
         return false;
-    if(l.head->next == NULL){
+    if(l.head == NULL && l.initializedL == 1)
+        return false;
+    if(l.head->next == NULL && l.initializedL == 1){
         oldTail = l.head->value;
         delete l.head;
         l.head = NULL;
         return true;
     }
-    Element *beforeInspectedElem = l.head;
-    Element *elementInspected = l.head->next;
-    while(elementInspected->next!=NULL){
-        beforeInspectedElem = elementInspected;
-        elementInspected = elementInspected->next;
+    if(l.head!=NULL && l.initializedL == 1){
+        Element *beforeInspectedElem = l.head;
+        Element *elementInspected = l.head->next;
+        while(elementInspected->next!=NULL){
+            beforeInspectedElem = elementInspected;
+            elementInspected = elementInspected->next;
+        }
+        oldTail = elementInspected->value;
+        delete elementInspected;
+        elementInspected = NULL;
+        beforeInspectedElem->next = NULL;
+        return true;
     }
-    oldTail = elementInspected->value;
-    delete elementInspected;
-    elementInspected = NULL;
-    beforeInspectedElem->next = NULL;
-    return true;
 }
 
 int findPosOfValue(List& l, int value){
-    Element *elementInspected = l.head;
-    int i = 0;
-    while(elementInspected->next!=NULL){
+    if(l.head!=NULL && l.initializedL == 1){
+        Element *elementInspected = l.head;
+        int i = 0;
+        while(elementInspected->next!=NULL){
+            if(elementInspected->value == value){
+                return i;
+            }
+            elementInspected = elementInspected->next;
+            i++;
+        }
         if(elementInspected->value == value){
             return i;
         }
-        elementInspected = elementInspected->next;
-        i++;
-    }
-    if(elementInspected->value == value){
-        return i;
     }
 	return -1;
 }
 
 bool deleteValue(List& l, int value){
-    if(l.head!=NULL){
+    if(l.head!=NULL && l.initializedL == 1){
         if(l.head->value == value){
             l.head = l.head->next;
             return true;
@@ -121,7 +133,7 @@ bool deleteValue(List& l, int value){
 }
 
 bool atPosition(List& l, int pos, int &value){
-    if(l.head != NULL){
+    if(l.head != NULL && l.initializedL == 1){
         Element *elementInspected = l.head;
         int i = 0;
         while(elementInspected->next!=NULL){
@@ -141,7 +153,7 @@ bool atPosition(List& l, int pos, int &value){
 }
 
 void showListFromHead(List& l){
-    if(l.head!=NULL){
+    if(l.head!=NULL && l.initializedL == 1){
         Element *elementInspected = l.head;
         while(elementInspected->next!=NULL){
             cout << elementInspected->value << ",";
@@ -152,17 +164,19 @@ void showListFromHead(List& l){
 }
 
 void clearList(List& l){
-    Element *elementInspected = l.head;
-    l.head = NULL;
-    Element *nextInspected = NULL;
-    while(elementInspected->next!=NULL){
-        nextInspected = elementInspected->next;
+    if(l.head!=NULL && l.initializedL == 1){
+        Element *elementInspected = l.head;
+        l.head = NULL;
+        Element *nextInspected = NULL;
+        while(elementInspected->next!=NULL){
+            nextInspected = elementInspected->next;
+            delete elementInspected;
+            elementInspected = nextInspected;
+        }
         delete elementInspected;
-        elementInspected = nextInspected;
+        nextInspected = NULL;
+        elementInspected = NULL;
     }
-    nextInspected = NULL;
-    delete elementInspected;
-    elementInspected = NULL;
 }
 
 void showBool(bool val){
@@ -303,3 +317,4 @@ int main(){
 		cout << "wrong argument in test: " << command << endl;
 	}
 }
+

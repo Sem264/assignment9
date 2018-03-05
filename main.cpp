@@ -160,6 +160,7 @@ void showListFromHead(List& l){
         }
         cout << elementInspected->value << "," << endl;
     }else if(l.head == NULL){
+	    //If this does not want, try changing the value in  cout << "" << endl to " " or "\n" but i think it should work fine
 	     cout << "" << endl;
     }
 }

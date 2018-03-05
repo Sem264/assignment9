@@ -159,6 +159,8 @@ void showListFromHead(List& l){
             elementInspected = elementInspected->next;
         }
         cout << elementInspected->value << "," << endl;
+    }else if(l.head == NULL){
+	     cout << "" << endl;
     }
 }
 

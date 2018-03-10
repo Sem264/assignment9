@@ -1,4 +1,4 @@
-#include<iostream>
+#include <iostream>
 #include <string>
 #include <sstream>
 
@@ -9,222 +9,195 @@ using namespace std;
 struct Element{
     int value;
     Element *next;
-    Element *prev;
+    Element *previous;
 };
 
 struct List2W{
     Element *head;
-    Element *tail;
     int active;
 };
 
 void init(List2W& l){
     l.head = NULL;
-    l.tail = NULL;
     l.active = 1;
 }
 
 void insertHead(List2W& l, int x){
-    if(l.head==NULL && l.active == 1){
+    if(l.active==1){
         Element *newEl = new Element();
         newEl->value = x;
-        newEl->next = newEl;
-        newEl->prev = newEl;
-        l.head = newEl;
-        l.tail = newEl;
-    }else if(l.head!=NULL && l.active == 1){
-        Element *newEl = new Element();
-        newEl->value = x;
-        newEl->next = l.head;
-        newEl->prev = l.tail;
-        l.tail->next = newEl;
-        l.head->prev = newEl;
-        l.head = newEl;
+        if(l.head==NULL){
+            newEl->next = newEl;
+            newEl->previous = newEl;
+            l.head = newEl;
+        }else{
+            newEl->next = l.head;
+            newEl->previous = l.head->previous;
+            l.head->previous->next = newEl;
+            l.head->previous = newEl;
+            l.head = newEl;
+        }
     }
 }
 
 bool deleteHead(List2W& l, int &value){
-    if(l.head==NULL || (l.head!=NULL && l.active!=1))
+    if(l.head == NULL || l.active!=1)
+        return false;
+    Element *deleteH = l.head;
+    value = deleteH->value;
+    if(l.head->next == l.head){
+        delete deleteH;
+        l.head = NULL;
+        return true;
+    }
+    l.head = deleteH->next;
+    l.head->previous = deleteH->previous;
+    deleteH->previous->next = l.head;
+    delete deleteH;
+    return true;
+}
+
+void insertTail(List2W& l, int x){
+    if(l.active==1){
+        Element *newEl = new Element();
+        newEl->value = x;
+        if(l.head==NULL){
+            newEl->next = newEl;
+            newEl->previous = newEl;
+            l.head = newEl;
+        }else{
+            newEl->next = l.head;
+            newEl->previous = l.head->previous;
+            l.head->previous->next = newEl;
+            l.head->previous = newEl;
+        }
+    }
+}
+
+bool deleteTail(List2W& l, int &value){
+    if(l.head==NULL || l.active!=1)
         return false;
     if(l.head->next == l.head){
         value = l.head->value;
         delete l.head;
         l.head = NULL;
-        l.tail = NULL;
         return true;
     }
-    l.head->next->prev = l.tail;
-    l.tail->next = l.head->next;
-    Element *deleteElem = l.head;
-    value = deleteElem->value;
-    l.head = l.head->next;
-    delete deleteElem;
-    return true;
-}
-
-void insertTail(List2W& l, int x){
-    if(l.head==NULL && l.active == 1){
-        Element *newEl = new Element();
-        newEl->value = x;
-        newEl->next = newEl;
-        newEl->prev = newEl;
-        l.head = newEl;
-        l.tail = newEl;
-    }else if(l.head!=NULL && l.active == 1){
-        Element *newEl = new Element();
-        newEl->value = x;
-        newEl->next = l.head;
-        newEl->prev = l.tail;
-        l.tail->next = newEl;
-        l.head->prev = newEl;
-        l.tail = newEl;
-    }
-}
-
-bool deleteTail(List2W& l, int &value){
-    if(l.tail==NULL || (l.tail!=NULL && l.active!=1))
-        return false;
-    if(l.tail->prev == l.tail){
-        value = l.tail->value;
-        delete l.tail;
-        l.head = NULL;
-        l.tail = NULL;
-        return true;
-    }
-    Element *deleteElem = l.tail;
-    value = deleteElem->value;
-    l.tail = l.tail->prev;
-    l.tail->next = l.head;
-    if(l.tail->prev == deleteElem){
-        l.tail->prev = l.tail;
-    }else{
-        l.tail->next = l.head;
-        l.tail->next->prev = l.tail;
-    }
-    if(l.tail->next == deleteElem){
-        l.tail->next = l.tail;
-    }
-    delete deleteElem;
+    Element *deleteT = l.head->previous;
+    value = deleteT->value;
+    l.head->previous->previous->next = l.head;
+    l.head->previous = l.head->previous->previous;
+    delete deleteT;
     return true;
 }
 
 int findValue(List2W& l, int value){
-    if(l.active==1 && l.head!=NULL){
-        Element *elementFromList = l.head;
+    if(l.head!=NULL && l.active!=0){
+        Element *searchedVal = l.head;
         int i = 0;
-        while(elementFromList->next!=l.head){
-            if(elementFromList->value == value)
+        while(searchedVal!=l.head->previous){
+            if(searchedVal->value == value)
                 return i;
-            elementFromList = elementFromList->next;
             i++;
+            searchedVal = searchedVal->next;
         }
-        if(elementFromList->value == value)
+        if(searchedVal->value == value)
                 return i;
     }
 	return -1;
 }
 
 void removeAllValue(List2W& l, int value){
-    if(l.head != NULL && l.active == 1){
-        Element *elementList = l.head;
-        Element *elementBefore = l.tail;
-        while(elementList!=l.tail){
-            if(elementList->value == value){
-                if(elementList == l.head){
-                    l.head = elementList->next;
-                    l.tail->next = elementList->next;
-                    elementList->next->prev = l.tail;
-                    Element *deleteElem = elementList;
-                    elementList = elementList->next;
-                    delete deleteElem;
-               }else{
-                    elementBefore->next = elementList->next;
-                    elementList->next->prev = elementBefore;
-                    Element *deleteElem = elementList;
-                    elementList = elementList->next;
-                    delete deleteElem;
+    if(l.head!=NULL && l.active==1){
+        Element *removedEl = l.head;
+        while(removedEl->next!=l.head){
+            Element *removeIt = NULL;
+            if(removedEl->value == value){
+                if(removedEl->next->next == removedEl){
+                    l.head = l.head->next;
+                    l.head->previous = l.head;
+                    l.head->next = l.head;
+                    removeIt =  removedEl;
+                }else{
+                    removedEl->previous->next = removedEl->next;
+                    removedEl->next->previous = removedEl->previous;
+                    if(removedEl == l.head){
+                        l.head = removedEl->next;
+                    }
+                    removeIt =  removedEl;
                 }
-            }else{
-                elementBefore = elementList;
-                elementList = elementList->next;
+            }
+            removedEl = removedEl->next;
+            if(removeIt!=NULL){
+                delete removeIt;
             }
         }
-
-        if(elementList->next == elementList && elementList->value == value){
-            delete elementList;
+        if(removedEl->value == value && l.head->next == l.head){
+            delete l.head;
             l.head = NULL;
-            l.tail = NULL;
-        }else if(elementList->value == value){
-            Element *deleteElem = l.tail;
-            l.tail = elementList->prev;
-            if(l.tail->prev == deleteElem){
-                l.tail->prev = l.tail;
-            }else{
-                l.tail->next = l.head;
-                l.tail->next->prev = l.tail;
-            }
-            if(l.tail->next == deleteElem){
-                l.tail->next = l.tail;
-            }
-            delete deleteElem;
+        }else if(removedEl->value == value){
+            removedEl->previous->next = l.head;
+            l.head->previous = removedEl->previous;
+            delete removedEl;
         }
     }
 }
 
 void showListFromHead(List2W& l){
-    if(l.active==1 && l.head!=NULL){
-        Element *elementFromList = l.head;
-        while(elementFromList->next!=l.head){
-            cout<<elementFromList->value<<",";
-            elementFromList = elementFromList->next;
+    if(l.head!=NULL && l.active==1){
+        Element *elementToShow = l.head;
+        while(elementToShow->next!=l.head){
+            cout<<elementToShow->value<<",";
+            elementToShow = elementToShow->next;
         }
-        cout<<elementFromList->value<<",";
-    }
-    cout<<""<<endl;
+        cout<<elementToShow->value<<","<<endl;
+    }else
+        cout<<""<<endl;
 }
 
 void showListFromTail(List2W& l){
-    if(l.active==1 && l.head!=NULL){
-        Element *elementFromList = l.tail;
-        while(elementFromList->prev!=l.tail){
-            cout<<elementFromList->value<<",";
-            elementFromList = elementFromList->prev;
+    if(l.head!=NULL && l.active==1){
+        Element *elementToShow = l.head->previous;
+        while(elementToShow->previous!=l.head->previous){
+            cout<<elementToShow->value<<",";
+            elementToShow = elementToShow->previous;
         }
-        cout<<elementFromList->value<<",";
-    }
-    cout<<""<<endl;
+        cout<<elementToShow->value<<","<<endl;
+    }else
+        cout<<""<<endl;
 }
 
 void clearList(List2W& l){
-    if(l.active==1 && l.head!=NULL){
-        Element *elementFromList = l.head;
-        Element *delElem = NULL;
-        while(elementFromList->next!=l.head){
-            delElem = elementFromList;
-            elementFromList = elementFromList->next;
-            delete delElem;
+    if(l.head!=NULL && l.active==1){
+        if(l.head->next == l.head){
+            delete l.head;
+            l.head = NULL;
+        }else{
+            Element *clearEl = l.head;
+            Element *iteratorList = l.head;
+            while(iteratorList->next!=l.head){
+                iteratorList = iteratorList->next;
+                delete clearEl;
+                clearEl = iteratorList;
+            }
+            delete clearEl;
+            l.head = NULL;
         }
-        delete delElem;
-        l.head = NULL;
-        l.tail = NULL;
     }
 }
 
 void addList(List2W& l1,List2W& l2){
     if(l1.active == 1 && l2.active == 1 && l1.head!=l2.head){
-        if(l2.head != NULL && l1.head != NULL){
-            l1.tail->next = l2.head;
-            l2.tail->next = l1.head;
-            l2.head->prev = l1.tail;
-            l1.head->prev = l2.tail;
-            l1.tail = l2.tail;
+        if(l1.head!=NULL && l2.head!=NULL){
+            l1.head->previous->next = l2.head;
+            Element *prevL1 = l1.head->previous;
+            l1.head->previous = l2.head->previous;
+            l2.head->previous->next = l1.head;
+            l2.head->previous = prevL1;
             l2.head = NULL;
-            l2.tail = NULL;
-        }else if(l1.head == NULL && l2.head != NULL){
+        }else if(l1.head==NULL && l2.head!=NULL){
             l1.head = l2.head;
-            l1.tail = l2.tail;
             l2.head = NULL;
-            l2.tail = NULL;
         }
     }
 }

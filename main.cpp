@@ -101,6 +101,9 @@ bool deleteTail(List2W& l, int &value){
         l.tail->next = l.head;
         l.tail->next->prev = l.tail;
     }
+    if(l.tail->next == deleteElem){
+        l.tail->next = l.tail;
+    }
     delete deleteElem;
     return true;
 }
@@ -153,12 +156,15 @@ void removeAllValue(List2W& l, int value){
             l.tail = NULL;
         }else if(elementList->value == value){
             Element *deleteElem = l.tail;
-            l.tail = l.tail->prev;
+            l.tail = elementList->prev;
             if(l.tail->prev == deleteElem){
                 l.tail->prev = l.tail;
             }else{
                 l.tail->next = l.head;
                 l.tail->next->prev = l.tail;
+            }
+            if(l.tail->next == deleteElem){
+                l.tail->next = l.tail;
             }
             delete deleteElem;
         }

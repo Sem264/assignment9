@@ -1,70 +1,140 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include "mainHeader.h"
+/******************************************************************************
 
-int checkToken(char *token, int *controller){
-    int ret = 0;
-    if((ret = isName(token))){
-        controller[0] = 1;
-        return ret;
-    }else if((ret = isAge(token))){
-        controller[1] = 1;
-        return ret;
-    }else if((ret = isWeight(token))){
-        controller[2] = 1;
-        return ret;
+                              Online C++ Compiler.
+               Code, Compile, Run and Debug C++ program online.
+Write your code in this editor and press "Run" button to compile and execute it.
+
+*******************************************************************************/
+
+#include <iostream>
+
+using namespace std;
+
+struct Element{
+    int value;
+    struct Element *next;
+    struct Element *prev;
+};
+
+struct lHead{
+    struct Element *head;
+};
+
+void addElement(lHead & list, int value){
+    Element *newEl = new Element();
+    newEl->value = value;
+    if(l.head!=NULL){
+        Element *thisEl = l.head;
+        if(l.head->next = l.head){
+            if(l.head->value>newEl->value){
+                l.head->next = newEl;
+                l.head->prev = newEl;
+                newEl->next = l.head;
+                newEl->prev = l.head;
+            }else{
+                while(thisEl->next!=l.head){
+                    if(thisEl->value < newEl->value){
+                        newEl->prev = thisEl->prev;
+                        newEl->next = thisEl;
+                        thisEl->prev = newEl;
+                        thisEl->prev->next = newEl;
+                    }
+                    thisEl = thisEl->next;
+                }
+                if(thisEl->value < newEl->value){
+                    newEl->prev = thisEl->prev;
+                    newEl->next = thisEl;
+                    thisEl->prev = newEl;
+                    thisEl->prev->next = newEl;
+                }
+            }
+        }
+    }
+}
+
+void removeCh(lHead &l, int value){
+    Element *fEl = l.head;
+    if(fEl->value == value && l.head->next == l.head){
+        delete l.head;
+        l.head = NULL;
     }else{
-        if(controller[0]==1 && controller[1]==1 && controller[2]==1){
-            controller[3] = 1;
-            return 4;
-        }else{
-            return 0;
+        while(fEl->value!=value && fEl->next!=l.head){
+            int delete = 0;
+            if(fEl->value == value){
+                fEl->prev->next = fEl->next;
+                fEl->next->prev = fEl->prev;
+                delete = 1;
+            }
+            fEl = fEl->next;
+            if(delete == 1)
+                delete fEl->prev;
         }
+        int delete = 0;
+        if(fEl->value == value && l.head->next == l.head){
+            delete l.head;
+            l.head = NULL;
+        }
+        if(fEl->value == value){
+            fEl->prev->next = fEl->next;
+            fEl->next->prev = fEl->prev;
+            delete = 1;
+        }
+        if(delete == 1)
+            delete fEl;
     }
 }
 
-int isName(char *token){
-    int i = 0;
-    if(token[i]<'A' || token[i]>'Z'){
-        return 0;
-    }
-    i++;
-    while(token[i]!='\0'){
-        if(token[i]<'a' || token[i]>'z'){
-            return 0;
+Element * findCh(lHead &l, int pos){
+    Element *fEl = l.head;
+    int posEl = 0;
+
+    while(posEl!=pos && fEl->next!=l.head){
+        int delete = 0;
+        if(posEl == pos){
+            return fEl;
         }
-        i++;
+        fEl = fEl->next;
+        posEl++;
     }
-    return 1;
+    if(posEl==pos){
+       return fEl;
+    }
 }
 
-int isAge(char *token){
-    unsigned int i = 0;
-    while(token[i]!='\0'){
-        if(token[i]<'0' || token[i]>'9'){
-            return 0;
-        }
-        i++;
+void reverseList(lHead &l){
+    Element *thisEl = l.head->prev;
+    while(thisEl!=l.head){
+        Element *wasNext = thisEl->next;
+        Element *wasPrev = thisEl->prev;
+        thisEl->next = wasPrev;
+        thisEl->prev = wasNext;
     }
-    return 2;
+    Element *wasNext = thisEl->next;
+    Element *wasPrev = thisEl->prev;
+    thisEl->next = wasPrev;
+    thisEl->prev = wasNext;
 }
 
-int isWeight(char *token){
-    unsigned int i = 0;
-    int dotC = 0;
-    while(token[i]!='\0'){
-        if(token[i]=='.' && dotC==0){
-            dotC++;
-        }else if(token[i]>='0' && token[i]<='9'){
-            i++;
-            continue;
-        }else{
-            return 0;
-        }
-        i++;
+void copyList(lHead &l){
+    lHead lCpy = new lHead;
+    lCpy.head->NULL;
+    Element *lCpyEl = lCpy.head;
+    Element *lCpyHead = lCpy.head;
+    Element *thisEl = l.head;
+    while(thisEl->next!=l.head){
+        lCpyEl = new Element();
+        lCpyEl->prev = lCpyHead;
+        lCpyEl->next = lCpy.head;
+        lCpy.head->next = lCpyEl;
+        lCpyEl->value = thisEl->value;
+        lCpy.head->prev = lCpyEl;
+        lCpyHead = lCpyHead;
+        thisEl = thisEl->next;
     }
-    if(dotC == 0){
-        return 0;
-    }
-    return 3;
+}
+
+
+int main()
+{
+    return 0;
 }

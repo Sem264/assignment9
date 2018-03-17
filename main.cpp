@@ -138,7 +138,7 @@ void clearList(List2W& l){
             thisElement->prev->next = thisElement->next;
             thisElement->next->prev = thisElement->prev;
             thisElement = thisElement->next;
-            delete deleteElemenOt;
+            delete deleteElement;
         }
         l.sentinel->next = l.sentinel;
         l.sentinel->prev = l.sentinel;
@@ -147,7 +147,7 @@ void clearList(List2W& l){
 
 void addList(List2W& l1,List2W& l2){
     if(l1.sentinel!=l2.sentinel){
-        if(l1.sentinel->next == l1.sentinel){
+        if(l1.sentinel->next == l1.sentinel && l2.sentinel->next!=l2.sentinel){
             l1.sentinel->next = l2.sentinel->next;
             l1.sentinel->prev = l2.sentinel->prev;
             l2.sentinel->next->prev = l1.sentinel;
@@ -157,8 +157,9 @@ void addList(List2W& l1,List2W& l2){
         }else if(l2.sentinel->next!=l2.sentinel && l1.sentinel->next!=l1.sentinel){
             ElementLL *elemL2 = l2.sentinel->next;
             ElementLL *elemL2Next = elemL2->next;
+            int changed = -1;
             while(elemL2!=l2.sentinel){
-                int changed = -1;
+                changed = -1;
                 ElementLL *elemL1 = l1.sentinel->next;
                 ElementLL *elemL1Next = elemL1->next;
                 while(elemL1!=l1.sentinel){
@@ -189,7 +190,6 @@ void addList(List2W& l1,List2W& l2){
                     elemL1 = elemL1Next;
                     elemL1Next = elemL1Next->next;
                 }
-
                 if(changed == -1){
                     elemL2->next->prev = elemL2->prev;
                     elemL2->prev->next = elemL2->next;

@@ -1,203 +1,206 @@
-#include <iostream>
+#include<iostream>
 #include <string>
 #include <sstream>
 
 using namespace std;
 
 
-// Two-way unordered cycled list without sentinel
 struct Element{
-    int value;
-    Element *next;
-    Element *previous;
+	int key;
+	int value;
 };
 
+struct ElementLL{
+	Element elem;
+	ElementLL *next, *prev;
+};
+
+// Two-way ordered cycled list with sentinel
 struct List2W{
-    Element *head;
-    int active;
+	ElementLL *sentinel;
 };
 
 void init(List2W& l){
-    l.head = NULL;
-    l.active = 1;
+	l.sentinel=new ElementLL();
+	l.sentinel->next=l.sentinel;
+	l.sentinel->prev=l.sentinel;
 }
 
-void insertHead(List2W& l, int x){
-    if(l.active==1){
-        Element *newEl = new Element();
-        newEl->value = x;
-        if(l.head==NULL){
-            newEl->next = newEl;
-            newEl->previous = newEl;
-            l.head = newEl;
+void insertElem(List2W & l, Element elem){
+    if(l.sentinel!=NULL){
+        ElementLL *newEl = new ElementLL();
+        newEl->elem.value = elem.value;
+        newEl->elem.key = elem.key;
+        if(l.sentinel->next == l.sentinel){
+            l.sentinel->next = newEl;
+            l.sentinel->prev = newEl;
+            newEl->next = l.sentinel;
+            newEl->prev = l.sentinel;
         }else{
-            newEl->next = l.head;
-            newEl->previous = l.head->previous;
-            l.head->previous->next = newEl;
-            l.head->previous = newEl;
-            l.head = newEl;
-        }
-    }
-}
-
-bool deleteHead(List2W& l, int &value){
-    if(l.head == NULL || l.active!=1)
-        return false;
-    Element *deleteH = l.head;
-    value = deleteH->value;
-    if(l.head->next == l.head){
-        delete deleteH;
-        l.head = NULL;
-        return true;
-    }
-    l.head = deleteH->next;
-    l.head->previous = deleteH->previous;
-    deleteH->previous->next = l.head;
-    delete deleteH;
-    return true;
-}
-
-void insertTail(List2W& l, int x){
-    if(l.active==1){
-        Element *newEl = new Element();
-        newEl->value = x;
-        if(l.head==NULL){
-            newEl->next = newEl;
-            newEl->previous = newEl;
-            l.head = newEl;
-        }else{
-            newEl->next = l.head;
-            newEl->previous = l.head->previous;
-            l.head->previous->next = newEl;
-            l.head->previous = newEl;
-        }
-    }
-}
-
-bool deleteTail(List2W& l, int &value){
-    if(l.head==NULL || l.active!=1)
-        return false;
-    if(l.head->next == l.head){
-        value = l.head->value;
-        delete l.head;
-        l.head = NULL;
-        return true;
-    }
-    Element *deleteT = l.head->previous;
-    value = deleteT->value;
-    l.head->previous->previous->next = l.head;
-    l.head->previous = l.head->previous->previous;
-    delete deleteT;
-    return true;
-}
-
-int findValue(List2W& l, int value){
-    if(l.head!=NULL && l.active!=0){
-        Element *searchedVal = l.head;
-        int i = 0;
-        while(searchedVal!=l.head->previous){
-            if(searchedVal->value == value)
-                return i;
-            i++;
-            searchedVal = searchedVal->next;
-        }
-        if(searchedVal->value == value)
-                return i;
-    }
-	return -1;
-}
-
-void removeAllValue(List2W& l, int value){
-    if(l.head!=NULL && l.active==1){
-        Element *removedEl = l.head;
-        while(removedEl->next!=l.head){
-            Element *removeIt = NULL;
-            if(removedEl->value == value){
-                if(removedEl->next->next == removedEl){
-                    l.head = l.head->next;
-                    l.head->previous = l.head;
-                    l.head->next = l.head;
-                    removeIt =  removedEl;
-                }else{
-                    removedEl->previous->next = removedEl->next;
-                    removedEl->next->previous = removedEl->previous;
-                    if(removedEl == l.head){
-                        l.head = removedEl->next;
+            ElementLL *tElem = l.sentinel->next;
+            int modified = -1;
+            while(tElem!=l.sentinel){
+                modified = 0;
+                int currentKey = tElem->elem.key;
+                if(elem.key<currentKey){
+                    newEl->next = tElem;
+                    newEl->prev = tElem->prev;
+                    tElem->prev->next = newEl;
+                    tElem->prev = newEl;
+                    modified = 1;
+                    break;
+                }else if(elem.key==currentKey){
+                    ElementLL *sameElem = tElem;
+                    while(sameElem!=l.sentinel && sameElem->elem.key==currentKey){
+                        sameElem = sameElem->next;
                     }
-                    removeIt =  removedEl;
+                    sameElem = sameElem->prev;
+                    newEl->prev = sameElem;
+                    newEl->next = sameElem->next;
+                    sameElem->next->prev = newEl;
+                    sameElem->next = newEl;
+                    modified = 1;
+                    break;
                 }
+                tElem = tElem->next;
             }
-            removedEl = removedEl->next;
-            if(removeIt!=NULL){
-                delete removeIt;
+            if(modified == 0){
+                newEl->next = l.sentinel;
+                newEl->prev = l.sentinel->prev;
+                l.sentinel->prev->next = newEl;
+                l.sentinel->prev = newEl;
             }
+
         }
-        if(removedEl->value == value && l.head->next == l.head){
-            delete l.head;
-            l.head = NULL;
-        }else if(removedEl->value == value){
-            removedEl->previous->next = l.head;
-            l.head->previous = removedEl->previous;
-            delete removedEl;
+    }
+}
+
+bool findKey(List2W & l,int key, Element &elem){
+    ElementLL *thisElement = l.sentinel->next;
+    while((thisElement!=l.sentinel) && (thisElement->elem.key!=key)){thisElement = thisElement->next;}
+    if(thisElement->elem.key == key){
+        elem.key = key;
+        elem.value = thisElement->elem.value;
+        return true;
+    }
+    return false;
+}
+
+void removeAllKeys(List2W& l, int key){
+    if(l.sentinel!=NULL){
+        ElementLL *thisElement = l.sentinel->next;
+        while(thisElement!=l.sentinel){
+            if(thisElement->elem.key!=key){
+                thisElement = thisElement->next;
+                continue;
+            }
+            ElementLL *deleteElement = thisElement;
+            thisElement->prev->next = thisElement->next;
+            thisElement->next->prev = thisElement->prev;
+            thisElement = thisElement->next;
+            delete deleteElement;
         }
+        if(l.sentinel->next == l.sentinel){
+            l.sentinel->next = l.sentinel;
+            l.sentinel->prev = l.sentinel;
+        }
+
     }
 }
 
 void showListFromHead(List2W& l){
-    if(l.head!=NULL && l.active==1){
-        Element *elementToShow = l.head;
-        while(elementToShow->next!=l.head){
-            cout<<elementToShow->value<<",";
-            elementToShow = elementToShow->next;
+    if(l.sentinel!=NULL){
+        ElementLL *thisElement = l.sentinel->next;
+        while(thisElement!=l.sentinel){
+            cout<<thisElement->elem.key<<"("<<thisElement->elem.value<<"),";
+            thisElement = thisElement->next;
         }
-        cout<<elementToShow->value<<","<<endl;
-    }else
         cout<<""<<endl;
+    }
 }
 
 void showListFromTail(List2W& l){
-    if(l.head!=NULL && l.active==1){
-        Element *elementToShow = l.head->previous;
-        while(elementToShow->previous!=l.head->previous){
-            cout<<elementToShow->value<<",";
-            elementToShow = elementToShow->previous;
+    if(l.sentinel!=NULL){
+        ElementLL *thisElement = l.sentinel->prev;
+        while(thisElement!=l.sentinel){
+            cout<<thisElement->elem.key<<"("<<thisElement->elem.value<<"),";
+            thisElement = thisElement->prev;
         }
-        cout<<elementToShow->value<<","<<endl;
-    }else
         cout<<""<<endl;
+    }
 }
 
 void clearList(List2W& l){
-    if(l.head!=NULL && l.active==1){
-        if(l.head->next == l.head){
-            delete l.head;
-            l.head = NULL;
-        }else{
-            Element *clearEl = l.head;
-            Element *iteratorList = l.head;
-            while(iteratorList->next!=l.head){
-                iteratorList = iteratorList->next;
-                delete clearEl;
-                clearEl = iteratorList;
-            }
-            delete clearEl;
-            l.head = NULL;
+    if(l.sentinel!=NULL){
+        ElementLL *thisElement = l.sentinel->next;
+        while(thisElement!=l.sentinel){
+            ElementLL *deleteElement = thisElement;
+            thisElement->prev->next = thisElement->next;
+            thisElement->next->prev = thisElement->prev;
+            thisElement = thisElement->next;
+            delete deleteElemenOt;
         }
+        l.sentinel->next = l.sentinel;
+        l.sentinel->prev = l.sentinel;
     }
 }
 
 void addList(List2W& l1,List2W& l2){
-    if(l1.active == 1 && l2.active == 1 && l1.head!=l2.head){
-        if(l1.head!=NULL && l2.head!=NULL){
-            l1.head->previous->next = l2.head;
-            Element *prevL1 = l1.head->previous;
-            l1.head->previous = l2.head->previous;
-            l2.head->previous->next = l1.head;
-            l2.head->previous = prevL1;
-            l2.head = NULL;
-        }else if(l1.head==NULL && l2.head!=NULL){
-            l1.head = l2.head;
-            l2.head = NULL;
+    if(l1.sentinel!=l2.sentinel){
+        if(l1.sentinel->next == l1.sentinel){
+            l1.sentinel->next = l2.sentinel->next;
+            l1.sentinel->prev = l2.sentinel->prev;
+            l2.sentinel->next->prev = l1.sentinel;
+            l2.sentinel->prev->next = l1.sentinel;
+            l2.sentinel->next = l2.sentinel;
+            l2.sentinel->prev = l2.sentinel;
+        }else if(l2.sentinel->next!=l2.sentinel && l1.sentinel->next!=l1.sentinel){
+            ElementLL *elemL2 = l2.sentinel->next;
+            ElementLL *elemL2Next = elemL2->next;
+            while(elemL2!=l2.sentinel){
+                int changed = -1;
+                ElementLL *elemL1 = l1.sentinel->next;
+                ElementLL *elemL1Next = elemL1->next;
+                while(elemL1!=l1.sentinel){
+                    if(elemL2->elem.key < elemL1->elem.key){
+                        elemL2->next->prev = elemL2->prev;
+                        elemL2->prev->next = elemL2->next;
+                        elemL2->prev = elemL1->prev;
+                        elemL2->next = elemL1;
+                        elemL1->prev->next = elemL2;
+                        elemL1->prev = elemL2;
+                        changed = 1;
+                        break;
+                    }else if(elemL2->elem.key == elemL1->elem.key){
+                        int currentKey = elemL1->elem.key;
+                        while(elemL1->elem.key == currentKey && elemL1!=l1.sentinel){
+                            elemL1 = elemL1Next;
+                            elemL1Next = elemL1Next->next;
+                        }
+                        elemL2->next->prev = elemL2->prev;
+                        elemL2->prev->next = elemL2->next;
+                        elemL2->prev = elemL1->prev;
+                        elemL2->next = elemL1;
+                        elemL1->prev->next = elemL2;
+                        elemL1->prev = elemL2;
+                        changed = 1;
+                        break;
+                    }
+                    elemL1 = elemL1Next;
+                    elemL1Next = elemL1Next->next;
+                }
+
+                if(changed == -1){
+                    elemL2->next->prev = elemL2->prev;
+                    elemL2->prev->next = elemL2->next;
+                    elemL2->prev = l1.sentinel->prev;
+                    elemL2->next = l1.sentinel;
+                    l1.sentinel->prev->next = elemL2;
+                    l1.sentinel->prev = elemL2;
+                }
+                elemL2 = elemL2Next;
+                elemL2Next = elemL2Next->next;
+            }
         }
     }
 }
@@ -237,32 +240,10 @@ int main(){
 		command[0]=toupper(command[0]);
 		command[1]=toupper(command[1]);
 
+		// zero-argument command
 		if(isCommand(command,"HA")){
 			cout << "END OF EXECUTION" << endl;
 			break;
-		}
-
-
-		// zero-argument command
-		if(isCommand(command,"DH")) //*
-		{
-			int retValue;
-			bool retBool=deleteHead(list[currentL],retValue);
-			if(retBool)
-				cout << retValue << endl;
-			else
-				showBool(retBool);
-			continue;
-		}
-		if(isCommand(command,"DT")) //*
-		{
-			int retValue;
-			bool retBool=deleteTail(list[currentL],retValue);
-			if(retBool)
-				cout << retValue << endl;
-			else
-				showBool(retBool);
-			continue;
 		}
 
 		if(isCommand(command,"SH")) //*
@@ -292,51 +273,52 @@ int main(){
 		// read next argument, one int value
 		stream >> value;
 
-		if(isCommand(command,"FV")) //*
+		if(isCommand(command,"FK"))
 		{
-			int ret;
-			ret=findValue(list[currentL],value);
-			cout << ret << endl;
+			Element elem;
+			bool ret=findKey(list[currentL], value, elem);
+			if(ret)
+				cout << elem.key << '(' << elem.value << ')' << endl;
+			else
+				cout << "false" << endl;
 			continue;
 		}
 
-		if(isCommand(command,"RV")) //*
+		if(isCommand(command,"RK"))
 		{
-			removeAllValue(list[currentL],value);
+			removeAllKeys(list[currentL],value);
 			continue;
 		}
 
-
-		if(isCommand(command,"AD")) //*
-		{
-			addList(list[currentL],list[value]);
-			continue;
-		}
-
-		if(isCommand(command,"CH")) //*
+		if(isCommand(command,"CH"))
 		{
 			currentL=value;
 			continue;
 		}
 
-		if(isCommand(command,"IH")) //*
+		if(isCommand(command,"IE"))
 		{
-			insertHead(list[currentL],value);
+			int variable2;
+			stream >> variable2;
+			Element elem;
+			elem.key=value;
+			elem.value=variable2;
+			insertElem(list[currentL],elem);
 			continue;
 		}
 
-		if(isCommand(command,"IT")) //*
-		{
-			insertTail(list[currentL],value);
-			continue;
-		}
-
-		if(isCommand(command,"GO")) //*
+		if(isCommand(command,"GO"))
 		{
 			list=new List2W[value];
 			continue;
 		}
 
+		if(isCommand(command,"AD"))
+		{
+			addList(list[currentL],list[value]);
+			continue;
+		}
 		cout << "wrong argument in test: " << command << endl;
 	}
+	return 0;
 }

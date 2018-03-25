@@ -82,15 +82,37 @@ void mergeSortIter(int array[], int size){
                 int sizeLeft = sizeTemp, sizeRight = sizeTemp;
                 int pointerLeft = j;
                 int pointerRight = j+sizeTemp;
-                int *arrayTemp = new int[2*sizeTemp];
-                for(int k = 0; k<(2*sizeTemp); k++){
-                    if(sizeLeft==0 && sizeRight>0){
+                int *arrayTemp = NULL;
+                int sizeArrTemp;
+                if(pointerRight>=size){
+                    if(j+sizeLeft==size)
+                        sizeArrTemp = sizeLeft;
+                    else
+                        sizeArrTemp = sizeTemp-(j+sizeLeft-size);
+                    arrayTemp = new int[sizeArrTemp];
+                }else{
+                    if((j+2*sizeTemp)<size)
+                        sizeArrTemp = sizeLeft+sizeRight;
+                    else
+                        sizeArrTemp = sizeLeft+(size-j-sizeRight);
+                    arrayTemp = new int[sizeArrTemp];
+                }
+                for(int k = 0; k<(sizeArrTemp); k++){
+                    if(pointerRight>=size && pointerLeft<size){
+                        arrayTemp[k] = array[pointerLeft++];
+                        sizeLeft--;
+                        sizeRight=0;
+                    }
+                    else if(pointerRight>=size && pointerLeft>=size){
+                        break;
+                    }
+                    else if(sizeLeft==0 && sizeRight>0){
                         arrayTemp[k] = array[pointerRight++];
                         sizeRight--;
                     }
                     else if(sizeRight==0 && sizeLeft>0){
                         arrayTemp[k] = array[pointerLeft++];
-                        sizeRight--;
+                        sizeLeft--;
                     }
                     else if(array[pointerLeft]<=array[pointerRight] && sizeLeft>0){
                         arrayTemp[k] = array[pointerLeft++];
@@ -101,19 +123,19 @@ void mergeSortIter(int array[], int size){
                         sizeRight--;
                     }
 
+
                 }
                 int counterTemp = 0;
-                showArray(arrayTemp,2*sizeTemp);
-                for(int g = j; g<j+(2*sizeTemp); g++){
+                for(int g = j; g<j+(2*sizeTemp) && g<size; g++){
                     array[g] = arrayTemp[counterTemp++];
                 }
-                showArray(array,size);
                 delete [] arrayTemp;
-                //showArray(array,size);
             }
-//            showArray(array,size);
+            showArray(array,size);
         }
     }
+    else
+        showArray(array,size);
 }
 
 int * loadArray(int size){

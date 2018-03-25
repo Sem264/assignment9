@@ -77,7 +77,7 @@ void bubbleSort(int array[], int size){
 
 void mergeSortIter(int array[], int size){
     if(size>1){
-        for(int sizeTemp = 1;sizeTemp<=size;sizeTemp*=2){
+        for(int sizeTemp = 1;sizeTemp<size;sizeTemp*=2){
             for(int j = 0; j<=size-sizeTemp; j+=(2*sizeTemp)){
                 int sizeLeft = sizeTemp, sizeRight = sizeTemp;
                 int pointerLeft = j;
@@ -134,8 +134,6 @@ void mergeSortIter(int array[], int size){
             showArray(array,size);
         }
     }
-    else
-        showArray(array,size);
 }
 
 int * loadArray(int size){
@@ -144,7 +142,7 @@ int * loadArray(int size){
 	char *arrChar = new char[size*5];
 	int countOneInt;
     int arrIndex = 0;
-	while((fgets(arrChar,size*5,stdin)!=NULL) && arr!=NULL){
+	if((fgets(arrChar,size*5,stdin)!=NULL) && arr!=NULL){
         for(int i = 0; (i<size*5); i++){
             int outLoop = 0;
             countOneInt = 0;

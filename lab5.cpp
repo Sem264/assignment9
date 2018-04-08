@@ -3,6 +3,7 @@
 #include <math.h>
 #include <string>
 #include <sstream>
+#include <chrono>
 #include <algorithm>
 
 using namespace std;
@@ -214,15 +215,23 @@ int main(){
 		{
 			int *arr=loadArray(size);
 			showArray(arr,size);
+			auto start = std::chrono::high_resolution_clock::now();
 			insertSort(arr,size);
+            auto end = std::chrono::high_resolution_clock::now();
+			std::chrono::duration<float> duration = end - start;
+			cout<<duration.count()<<"s"<<endl;
 			continue;
 		}
 
 		if(isCommand(command,"BS")) //*
 		{
-			int *arr=loadArray(size);
+            int *arr=loadArray(size);
 			showArray(arr,size);
+			auto start = std::chrono::high_resolution_clock::now();
 			bubbleSort(arr,size);
+			auto end = std::chrono::high_resolution_clock::now();
+			std::chrono::duration<float> duration = end - start;
+			cout<<duration.count()<<"s"<<endl;
 			continue;
 		}
 
@@ -230,8 +239,12 @@ int main(){
 		{
 			int *arr=loadArray(size);
 			showArray(arr,size);
+			auto start = std::chrono::high_resolution_clock::now();
 			mergeSortIter(arr,size);
-			continue;
+            auto end = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<float> duration = end - start;
+			cout<<duration.count()<<"s"<<endl;
+            continue;
 		}
 
 		cout << "wrong argument in test: " << command << endl;

@@ -1,324 +1,561 @@
-#include<iostream>
-#include <string>
-#include <sstream>
+#include <iostream>
+#include <cstdio>
+#include <cstring>
 
 using namespace std;
 
-
-struct Element{
-	int key;
-	int value;
+struct Node{
+    char word[32];
+    int number;
+    Node *parent;
+    Node *left;
+    Node *right;
 };
 
-struct ElementLL{
-	Element elem;
-	ElementLL *next, *prev;
+struct BST{
+    Node *root;
 };
 
-// Two-way ordered cycled list with sentinel
-struct List2W{
-	ElementLL *sentinel;
+struct NodeBalanced{
+    char word[32];
+    int number;
+    int heightBelow;
+    int balanceFactor;
+    NodeBalanced *parent;
+    NodeBalanced *left;
+    NodeBalanced *right;
 };
 
-void init(List2W& l){
-	l.sentinel=new ElementLL();
-	l.sentinel->next=l.sentinel;
-	l.sentinel->prev=l.sentinel;
+struct BBST{
+    NodeBalanced *root;
+};
+
+Node *findMinimum(BST &tree){
+    Node *tracker = tree.root;
+    while(tracker->left!=NULL)
+        tracker = tracker->left;
+    return tracker;
 }
 
-void insertElem(List2W & l, Element elem){
-    if(l.sentinel!=NULL){
-        ElementLL *newEl = new ElementLL();
-        newEl->elem.value = elem.value;
-        newEl->elem.key = elem.key;
-        if(l.sentinel->next == l.sentinel){
-            l.sentinel->next = newEl;
-            l.sentinel->prev = newEl;
-            newEl->next = l.sentinel;
-            newEl->prev = l.sentinel;
-        }else{
-            ElementLL *tElem = l.sentinel->next;
-            int modified = -1;
-            while(tElem!=l.sentinel){
-                modified = 0;
-                int currentKey = tElem->elem.key;
-                if(elem.key<currentKey){
-                    newEl->next = tElem;
-                    newEl->prev = tElem->prev;
-                    tElem->prev->next = newEl;
-                    tElem->prev = newEl;
-                    modified = 1;
+NodeBalanced *findMinimum(BBST &tree){
+    NodeBalanced *tracker = tree.root;
+    while(tracker->left!=NULL)
+        tracker = tracker->left;
+    return tracker;
+}
+
+void findPosition(BST &tree, char *wordNew){
+    if(tree.root==NULL){
+        Node *newNode = new Node;
+        strncpy(newNode->word, wordNew, strlen(wordNew));
+        newNode->word[strlen(wordNew)] = '\0';
+        newNode->left = NULL;
+        newNode->parent = NULL;
+        newNode->right = NULL;
+        tree.root = newNode;
+        newNode->number = 1;
+    }else if(tree.root!=NULL){
+        Node *tracker = tree.root;
+        Node *previous = tree.root;
+        int added = 0;
+        while(tracker!=NULL){
+            if((tracker->left == previous || tracker->left==NULL) && tracker->right!=NULL && tracker->right!=previous){
+                if(!strcmp(wordNew, tracker->word)){
+                    tracker->number++;
+                    added = 1;
                     break;
-                }else if(elem.key==currentKey){
-                    ElementLL *sameElem = tElem;
-                    while(sameElem!=l.sentinel && sameElem->elem.key==currentKey){
-                        sameElem = sameElem->next;
-                    }
-                    sameElem = sameElem->prev;
-                    newEl->prev = sameElem;
-                    newEl->next = sameElem->next;
-                    sameElem->next->prev = newEl;
-                    sameElem->next = newEl;
-                    modified = 1;
+                }
+                tracker = tracker->right;
+            }else if(tracker->left==previous && tracker->right==NULL){
+                if(!strcmp(wordNew, tracker->word)){
+                    tracker->number++;
+                    added = 1;
                     break;
                 }
-                tElem = tElem->next;
+                previous = tracker;
+                tracker = tracker->parent;
+            }else if(tracker->right == previous){
+                previous = tracker;
+                tracker = tracker->parent;
+            }else if(tracker->left == NULL && tracker->right==NULL){
+                if(!strcmp(wordNew, tracker->word)){
+                    tracker->number++;
+                    added = 1;
+                    break;
+                }
+                previous = tracker;
+                tracker = tracker->parent;
+            }else if(tracker->left!=previous && tracker->left!=NULL){
+                tracker = tracker->left;
             }
-            if(modified == 0){
-                newEl->next = l.sentinel;
-                newEl->prev = l.sentinel->prev;
-                l.sentinel->prev->next = newEl;
-                l.sentinel->prev = newEl;
+        }
+        if(added == 0){
+            Node *newNode = new Node;
+            strncpy(newNode->word, wordNew, strlen(wordNew));
+            newNode->word[strlen(wordNew)] = '\0';
+            newNode->left = NULL;
+            newNode->right = NULL;
+            Node *minNode = findMinimum(tree);
+            minNode->left = newNode;
+            newNode->parent = minNode;
+            newNode->number = 1;
+        }
+    }
+}
+
+int numberOfNodes(BST & tree){
+    Node *tracker = tree.root;
+    Node *previous = tree.root;
+    int counter = 0;
+    while(tracker!=NULL){
+        if(tracker->left!=NULL && tracker->left!=previous && tracker->right!=previous){
+            tracker = tracker->left;
+        }else if(tracker->left==NULL && tracker->right==NULL){
+            counter++;
+            previous = tracker;
+            tracker = tracker->parent;
+        }else if(tracker->right==previous){
+            counter++;
+            previous = tracker;
+            tracker = tracker->parent;
+        }else if(tracker->left==NULL || tracker->left==previous){
+            if(tracker->right!=NULL && tracker->right!=previous)
+                tracker = tracker->right;
+            else if(tracker->right==NULL){
+                counter++;
+                previous = tracker;
+                tracker = tracker->parent;
             }
-
         }
     }
+	return counter;
 }
 
-bool findKey(List2W & l,int key, Element &elem){
-    ElementLL *thisElement = l.sentinel->next;
-    while((thisElement!=l.sentinel) && (thisElement->elem.key!=key)){thisElement = thisElement->next;}
-    if(thisElement->elem.key == key){
-        elem.key = key;
-        elem.value = thisElement->elem.value;
-        return true;
+void findMaximum10BST(BST &tree){
+    int numberNodes = numberOfNodes(tree);
+    Node** arrNodes = new Node*[numberNodes];
+    Node *tracker = tree.root;
+    int counter = 0;
+    Node *previous = tree.root;
+    while(tracker!=NULL){
+        if((tracker->left == previous || tracker->left==NULL) && tracker->right!=NULL && tracker->right!=previous){
+            arrNodes[counter++] = tracker;
+            tracker = tracker->right;
+        }else if(tracker->left==previous && tracker->right==NULL){
+            arrNodes[counter++] = tracker;
+            previous = tracker;
+            tracker = tracker->parent;
+        }else if(tracker->right == previous){
+            previous = tracker;
+            tracker = tracker->parent;
+        }else if(tracker->left == NULL && tracker->right==NULL){
+            arrNodes[counter++] = tracker;
+            previous = tracker;
+            tracker = tracker->parent;
+        }else if(tracker->left!=previous && tracker->left!=NULL){
+            tracker = tracker->left;
+        }
     }
-    return false;
-}
-
-void removeAllKeys(List2W& l, int key){
-    if(l.sentinel!=NULL){
-        ElementLL *thisElement = l.sentinel->next;
-        while(thisElement!=l.sentinel){
-            if(thisElement->elem.key!=key){
-                thisElement = thisElement->next;
-                continue;
+    for(counter = 1; counter<numberNodes; counter++){
+        for(int j = 0; j<counter; j++){
+            if(arrNodes[j]->number<arrNodes[counter]->number){
+                Node *temp = arrNodes[counter];
+                for(int k = counter; k>j; k--){
+                    arrNodes[k] = arrNodes[k-1];
+                }
+                arrNodes[j] = temp;
             }
-            ElementLL *deleteElement = thisElement;
-            thisElement->prev->next = thisElement->next;
-            thisElement->next->prev = thisElement->prev;
-            thisElement = thisElement->next;
-            delete deleteElement;
         }
-        if(l.sentinel->next == l.sentinel){
-            l.sentinel->next = l.sentinel;
-            l.sentinel->prev = l.sentinel;
-        }
+    }
+    counter = 0;
+    while(counter!=10 && counter!=numberNodes){
+        cout<<arrNodes[counter]->word<<" - "<<arrNodes[counter]->number<<endl;
+        counter++;
+    }
+    delete [] arrNodes;
+}
 
+/////////BALANCED BINARY SEARCH TREE///////////
+
+
+NodeBalanced * leftRotate(BBST& treeBalanced, NodeBalanced *tracker){
+    NodeBalanced *trackerRightChild = tracker->right;
+    tracker->right = trackerRightChild->left;
+    if(trackerRightChild->left!=NULL)
+        trackerRightChild->left->parent = tracker;
+    trackerRightChild->parent = tracker->parent;
+    if(tracker->parent==NULL)
+       treeBalanced.root = trackerRightChild;
+    else if(tracker == tracker->parent->left)
+       tracker->parent->left = trackerRightChild;
+    else if(tracker == tracker->parent->right)
+       tracker->parent->right = trackerRightChild;
+    trackerRightChild->left = tracker;
+    tracker->parent = trackerRightChild;
+    return trackerRightChild;
+}
+
+NodeBalanced * rightRotate(BBST& treeBalanced, NodeBalanced *tracker){
+    NodeBalanced *trackerLeftChild = tracker->left;
+    tracker->left = trackerLeftChild->right;
+    if(trackerLeftChild->right!=NULL)
+        trackerLeftChild->right->parent = tracker;
+    trackerLeftChild->parent = tracker->parent;
+    if(tracker->parent==NULL)
+       treeBalanced.root = trackerLeftChild;
+    else if(tracker == tracker->parent->left)
+       tracker->parent->left = trackerLeftChild;
+    else if(tracker == tracker->parent->right)
+       tracker->parent->right = trackerLeftChild;
+    trackerLeftChild->right = tracker;
+    tracker->parent = trackerLeftChild;
+    return trackerLeftChild;
+}
+
+void startRotating(BBST &treeBalanced, NodeBalanced *tracker){
+    if(tracker->right!=NULL && tracker->right->balanceFactor==1){
+        tracker = leftRotate(treeBalanced, tracker);
+        tracker->balanceFactor = 0;
+        tracker->left->balanceFactor = 0;
+    }else if(tracker->right!=NULL && tracker->right->left!=NULL && tracker->right->balanceFactor==-1 && tracker->right->left->balanceFactor==1){
+        rightRotate(treeBalanced, tracker->right);
+        tracker = tracker->parent;
+        tracker = leftRotate(treeBalanced,tracker);
+        tracker->balanceFactor = 0;
+        tracker->left->balanceFactor = -1;
+        tracker->right->balanceFactor = 0;
+    }else if(tracker->right!=NULL && tracker->right->left!=NULL && tracker->right->balanceFactor==-1 && tracker->right->left->balanceFactor==-1){
+        rightRotate(treeBalanced, tracker->right);
+        tracker = tracker->parent;
+        tracker = leftRotate(treeBalanced,tracker);
+        tracker->balanceFactor = 0;
+        tracker->left->balanceFactor = 0;
+        tracker->right->balanceFactor = -1;
     }
 }
 
-void showListFromHead(List2W& l){
-    if(l.sentinel!=NULL){
-        ElementLL *thisElement = l.sentinel->next;
-        while(thisElement!=l.sentinel){
-            cout<<thisElement->elem.key<<"("<<thisElement->elem.value<<"),";
-            thisElement = thisElement->next;
+int numberOfNodes(BBST & tree){
+    NodeBalanced *tracker = tree.root;
+    NodeBalanced *previous = tree.root;
+    int counter = 0;
+    while(tracker!=NULL){
+        if(tracker->left!=NULL && tracker->left!=previous && tracker->right!=previous){
+            tracker = tracker->left;
+        }else if(tracker->left==NULL && tracker->right==NULL){
+            counter++;
+            previous = tracker;
+            tracker = tracker->parent;
+        }else if(tracker->right==previous){
+            counter++;
+            previous = tracker;
+            tracker = tracker->parent;
+        }else if(tracker->left==NULL || tracker->left==previous){
+            if(tracker->right!=NULL && tracker->right!=previous)
+                tracker = tracker->right;
+            else if(tracker->right==NULL){
+                counter++;
+                previous = tracker;
+                tracker = tracker->parent;
+            }
         }
-        cout<<""<<endl;
+    }
+	return counter;
+}
+
+void findMaximum10BBST(BBST &tree){
+    int numberNodes = numberOfNodes(tree);
+    NodeBalanced** arrNodes = new NodeBalanced*[numberNodes];
+    NodeBalanced *tracker = tree.root;
+    int counter = 0;
+    NodeBalanced *previous = tree.root;
+    while(tracker!=NULL){
+        if((tracker->left == previous || tracker->left==NULL) && tracker->right!=NULL && tracker->right!=previous){
+            arrNodes[counter++] = tracker;
+            tracker = tracker->right;
+        }else if(tracker->left==previous && tracker->right==NULL){
+            arrNodes[counter++] = tracker;
+            previous = tracker;
+            tracker = tracker->parent;
+        }else if(tracker->right == previous){
+            previous = tracker;
+            tracker = tracker->parent;
+        }else if(tracker->left == NULL && tracker->right==NULL){
+            arrNodes[counter++] = tracker;
+            previous = tracker;
+            tracker = tracker->parent;
+        }else if(tracker->left!=previous && tracker->left!=NULL){
+            tracker = tracker->left;
+        }
+    }
+    for(counter = 1; counter<numberNodes; counter++){
+        for(int j = 0; j<counter; j++){
+            if(arrNodes[j]->number<arrNodes[counter]->number){
+                NodeBalanced *temp = arrNodes[counter];
+                for(int k = counter; k>j; k--){
+                    arrNodes[k] = arrNodes[k-1];
+                }
+                arrNodes[j] = temp;
+            }
+        }
+    }
+    counter = 0;
+    while(counter!=10 && counter!=numberNodes){
+        cout<<arrNodes[counter]->word<<" - "<<arrNodes[counter]->number<<endl;
+        counter++;
+    }
+    delete [] arrNodes;
+}
+
+void balanceTree(NodeBalanced *tracker){
+    if(tracker==NULL)
+        return 0;
+    int heightR = balanceTree(treeBalanced, tracker->right);
+    int heightL = balanceTree(treeBalanced, tracker->left);
+    if(heightR>heightL)
+        tracker->heightBelow = heightR;
+    else
+        tracker->heightBelow = heightL;
+    tracker->balanceFactor = heightR-heightL;
+    if(tracker->balanceFactor==2 || tracker->balanceFactor==-2){
+        startRotating(treeBalanced, tracker);
+    }
+    return tracker->heightBelow+1;
+}
+
+void addNodeBalancedTree(BBST &tree, char *wordNew){
+    if(tree.root==NULL){
+        NodeBalanced *newNode = new NodeBalanced;
+        strncpy(newNode->word, wordNew, strlen(wordNew));
+        newNode->word[strlen(wordNew)] = '\0';
+        newNode->left = NULL;
+        newNode->parent = NULL;
+        newNode->right = NULL;
+        tree.root = newNode;
+        newNode->number = 1;
+        newNode->balanceFactor = 0;
+    }else if(tree.root!=NULL){
+        NodeBalanced *tracker = tree.root;
+        NodeBalanced *previous = tree.root;
+        int added = 0;
+        while(tracker!=NULL){
+            if((tracker->left == previous || tracker->left==NULL) && tracker->right!=NULL && tracker->right!=previous){
+                if(!strcmp(wordNew, tracker->word)){
+                    tracker->number++;
+                    added = 1;
+                    break;
+                }
+                tracker = tracker->right;
+            }else if(tracker->left==previous && tracker->right==NULL){
+                if(!strcmp(wordNew, tracker->word)){
+                    tracker->number++;
+                    added = 1;
+                    break;
+                }
+                previous = tracker;
+                tracker = tracker->parent;
+            }else if(tracker->right == previous){
+                previous = tracker;
+                tracker = tracker->parent;
+            }else if(tracker->left == NULL && tracker->right==NULL){
+                if(!strcmp(wordNew, tracker->word)){
+                    tracker->number++;
+                    added = 1;
+                    break;
+                }
+                previous = tracker;
+                tracker = tracker->parent;
+            }else if(tracker->left!=previous && tracker->left!=NULL){
+                tracker = tracker->left;
+            }
+        }
+        if(added == 0){
+            NodeBalanced *newNode = new NodeBalanced;
+            strncpy(newNode->word, wordNew, strlen(wordNew));
+            newNode->word[strlen(wordNew)] = '\0';
+            newNode->left = NULL;
+            newNode->right = NULL;
+            NodeBalanced *minNode = findMinimum(tree);
+            minNode->left = newNode;
+            newNode->parent = minNode;
+            newNode->number = 1;
+            balanceTree(minNode);
+        }
     }
 }
 
-void showListFromTail(List2W& l){
-    if(l.sentinel!=NULL){
-        ElementLL *thisElement = l.sentinel->prev;
-        while(thisElement!=l.sentinel){
-            cout<<thisElement->elem.key<<"("<<thisElement->elem.value<<"),";
-            thisElement = thisElement->prev;
+void buildBalancedTree(BBST &treeBalanced, BST &tree){
+    Node *tracker = tree.root;
+    Node *previous = tree.root;
+    while(tracker!=NULL){
+        if((tracker->left == previous || tracker->left==NULL) && tracker->right!=NULL && tracker->right!=previous){
+            addNodeBalancedTree(treeBalanced, tracker->word);
+            tracker = tracker->right;
+        }else if(tracker->left==previous && tracker->right==NULL){
+            addNodeBalancedTree(treeBalanced, tracker->word);
+            previous = tracker;
+            tracker = tracker->parent;
+        }else if(tracker->right == previous){
+            previous = tracker;
+            tracker = tracker->parent;
+        }else if(tracker->left == NULL && tracker->right==NULL){
+            addNodeBalancedTree(treeBalanced, tracker->word);
+            previous = tracker;
+            tracker = tracker->parent;
+        }else if(tracker->left!=previous && tracker->left!=NULL){
+            tracker = tracker->left;
         }
-        cout<<""<<endl;
     }
 }
 
-void clearList(List2W& l){
-    if(l.sentinel!=NULL){
-        ElementLL *thisElement = l.sentinel->next;
-        while(thisElement!=l.sentinel){
-            ElementLL *deleteElement = thisElement;
-            thisElement->prev->next = thisElement->next;
-            thisElement->next->prev = thisElement->prev;
-            thisElement = thisElement->next;
-            delete deleteElement;
-        }
-        l.sentinel->next = l.sentinel;
-        l.sentinel->prev = l.sentinel;
+
+//////////////HASHING//////////////////
+struct HashTableEntry{
+    HashTableEntry* nextEntry;
+    char *word;
+    int number;
+};
+
+struct HashTable{
+    HashTableEntry *entries[26];
+};
+
+void searchHashTable(HashTable &hashT, int position, char *word, int number){
+    HashTableEntry *tracker = hashT.entries[position];
+    if(tracker == NULL){
+        HashTableEntry *hte1 = new HashTableEntry;
+        hte1->nextEntry = NULL;
+        hte1->word = word;
+        hte1->number = number;
+        hashT.entries[position] = hte1;
+    }else{
+        while(tracker->nextEntry!=NULL)
+            tracker = tracker->nextEntry;
+        HashTableEntry *hte1 = new HashTableEntry;
+        hte1->nextEntry = NULL;
+        hte1->word = word;
+        hte1->number = number;
+        tracker->nextEntry = hte1;
     }
 }
 
-void addList(List2W& l1,List2W& l2){
-    if(l1.sentinel!=l2.sentinel){
-        if(l1.sentinel->next == l1.sentinel && l2.sentinel->next!=l2.sentinel){
-            l1.sentinel->next = l2.sentinel->next;
-            l1.sentinel->prev = l2.sentinel->prev;
-            l2.sentinel->next->prev = l1.sentinel;
-            l2.sentinel->prev->next = l1.sentinel;
-            l2.sentinel->next = l2.sentinel;
-            l2.sentinel->prev = l2.sentinel;
-        }else if(l2.sentinel->next!=l2.sentinel && l1.sentinel->next!=l1.sentinel){
-            ElementLL *elemL2 = l2.sentinel->next;
-            ElementLL *elemL2Next = elemL2->next;
-            int changed = -1;
-            while(elemL2!=l2.sentinel){
-                changed = -1;
-                ElementLL *elemL1 = l1.sentinel->next;
-                ElementLL *elemL1Next = elemL1->next;
-                while(elemL1!=l1.sentinel){
-                    if(elemL2->elem.key < elemL1->elem.key){
-                        elemL2->next->prev = elemL2->prev;
-                        elemL2->prev->next = elemL2->next;
-                        elemL2->prev = elemL1->prev;
-                        elemL2->next = elemL1;
-                        elemL1->prev->next = elemL2;
-                        elemL1->prev = elemL2;
-                        changed = 1;
-                        break;
-                    }else if(elemL2->elem.key == elemL1->elem.key){
-                        int currentKey = elemL1->elem.key;
-                        while(elemL1->elem.key == currentKey && elemL1!=l1.sentinel){
-                            elemL1 = elemL1Next;
-                            elemL1Next = elemL1Next->next;
-                        }
-                        elemL2->next->prev = elemL2->prev;
-                        elemL2->prev->next = elemL2->next;
-                        elemL2->prev = elemL1->prev;
-                        elemL2->next = elemL1;
-                        elemL1->prev->next = elemL2;
-                        elemL1->prev = elemL2;
-                        changed = 1;
-                        break;
+void insertWordsIntoHashTable(BST &tree, HashTable &hashT){
+    Node *tracker = tree.root;
+    Node *previous = tree.root;
+    while(tracker!=NULL){
+        if((tracker->left == previous || tracker->left==NULL) && tracker->right!=NULL && tracker->right!=previous){
+            char letter = tracker->word[0];
+            int position = letter % 97;
+            searchHashTable(hashT, position, tracker->word, tracker->number);
+            tracker = tracker->right;
+        }else if(tracker->left==previous && tracker->right==NULL){
+            char letter = tracker->word[0];
+            int position = letter % 97;
+            searchHashTable(hashT, position, tracker->word, tracker->number);
+            previous = tracker;
+            tracker = tracker->parent;
+        }else if(tracker->right == previous){
+            previous = tracker;
+            tracker = tracker->parent;
+        }else if(tracker->left == NULL && tracker->right==NULL){
+            char letter = tracker->word[0];
+            int position = letter % 97;
+            searchHashTable(hashT, position, tracker->word, tracker->number);
+            previous = tracker;
+            tracker = tracker->parent;
+        }else if(tracker->left!=previous && tracker->left!=NULL){
+            tracker = tracker->left;
+        }
+    }
+}
+
+/*void showHashTable(char letter, HashTable &hashT){
+    int position = letter % 97;
+    HashTableEntry *tracker = hashT.entries[position];
+    while(tracker!=NULL){
+        cout<<"Word: "<<tracker->word<<" is met: "<<tracker->number<<" times"<<endl;
+        tracker = tracker->nextEntry;
+    }
+}*/
+
+void findMaxHash(HashTable &hashT){
+    HashTableEntry arr10Max[10];
+    for(int i = 0; i<10; i++){
+        arr10Max[i].nextEntry = NULL;
+        arr10Max[i].number = 0;
+        arr10Max[i].word = NULL;
+    }
+    for(int i = 0; i<26; i++){
+        HashTableEntry *htep = hashT.entries[i];
+        while(htep!=NULL){
+            int pos = 10;
+            for(int k = 9; k>=0;k--){
+                if(htep->number>arr10Max[k].number)
+                    pos = k;
+                else
+                    break;
+            }
+            if(pos!=10){
+                for(int j = 9; j>pos; j--){
+                    arr10Max[j] = arr10Max[j-1];
+                }
+                arr10Max[pos].number = htep->number;
+                arr10Max[pos].word = htep->word;
+            }
+            htep = htep->nextEntry;
+        }
+    }
+    for(int q = 0; q<10; q++){
+        cout<<arr10Max[q].word<<" is met "<<arr10Max[q].number<<" times"<<endl;
+    }
+}
+
+int main(void)
+{
+    BST tree;
+    tree.root = NULL;
+    char inputArr[256];
+    while(fgets(inputArr, sizeof(inputArr), stdin)!=NULL){
+        for(int i = 0, prevCounter = 0; inputArr[i]!='\0'; i++){
+            if((inputArr[i]>='A' && inputArr[i]<='Z') || (inputArr[i]>='a' && inputArr[i]<='z')){
+                if(inputArr[i]>='A' && inputArr[i]<='Z')
+                    inputArr[i]+=32;
+                if(inputArr[i+1]=='\0'){
+                    char wordNew[32];
+                    int counter = 0;
+                    while(prevCounter!=i){
+                        wordNew[counter++] = inputArr[prevCounter++];
                     }
-                    elemL1 = elemL1Next;
-                    elemL1Next = elemL1Next->next;
+                    wordNew[counter] = '\0';
+                    prevCounter++;
+                    findPosition(tree, wordNew);
                 }
-                if(changed == -1){
-                    elemL2->next->prev = elemL2->prev;
-                    elemL2->prev->next = elemL2->next;
-                    elemL2->prev = l1.sentinel->prev;
-                    elemL2->next = l1.sentinel;
-                    l1.sentinel->prev->next = elemL2;
-                    l1.sentinel->prev = elemL2;
+            }else if(prevCounter==i){
+                prevCounter++;
+            }else{
+                char wordNew[32];
+                int counter = 0;
+                while(prevCounter!=i){
+                    wordNew[counter++] = inputArr[prevCounter++];
                 }
-                elemL2 = elemL2Next;
-                elemL2Next = elemL2Next->next;
+                wordNew[counter] = '\0';
+                prevCounter++;
+                findPosition(tree, wordNew);
             }
         }
     }
-}
-
-void showBool(bool val){
-	if(val)
-		cout << "true" << endl;
-	else
-		cout << "false" << endl;
-}
-
-bool isCommand(const string command,const char *mnemonic){
-	return command==mnemonic;
-}
-
-int main(){
-	string line;
-	string command;
-	List2W *list;
-	int currentL=0;
-	int value;
-	cout << "START" << endl;
-	while(true){
-		getline(cin,line);
-		std::stringstream stream(line);
-		stream >> command;
-		if(line=="" || command[0]=='#')
-		{
-			// ignore empty line and comment
-			continue;
-		}
-
-		// copy line on output with exclamation mark
-		cout << "!" << line << endl;;
-
-		// change to uppercase
-		command[0]=toupper(command[0]);
-		command[1]=toupper(command[1]);
-
-		// zero-argument command
-		if(isCommand(command,"HA")){
-			cout << "END OF EXECUTION" << endl;
-			break;
-		}
-
-		if(isCommand(command,"SH")) //*
-		{
-			showListFromHead(list[currentL]);
-			continue;
-		}
-
-		if(isCommand(command,"ST")) //*
-		{
-			showListFromTail(list[currentL]);
-			continue;
-		}
-
-		if(isCommand(command,"CL")) //*
-		{
-			clearList(list[currentL]);
-			continue;
-		}
-
-		if(isCommand(command,"IN")) //*
-		{
-			init(list[currentL]);
-			continue;
-		}
-
-		// read next argument, one int value
-		stream >> value;
-
-		if(isCommand(command,"FK"))
-		{
-			Element elem;
-			bool ret=findKey(list[currentL], value, elem);
-			if(ret)
-				cout << elem.key << '(' << elem.value << ')' << endl;
-			else
-				cout << "false" << endl;
-			continue;
-		}
-
-		if(isCommand(command,"RK"))
-		{
-			removeAllKeys(list[currentL],value);
-			continue;
-		}
-
-		if(isCommand(command,"CH"))
-		{
-			currentL=value;
-			continue;
-		}
-
-		if(isCommand(command,"IE"))
-		{
-			int variable2;
-			stream >> variable2;
-			Element elem;
-			elem.key=value;
-			elem.value=variable2;
-			insertElem(list[currentL],elem);
-			continue;
-		}
-
-		if(isCommand(command,"GO"))
-		{
-			list=new List2W[value];
-			continue;
-		}
-
-		if(isCommand(command,"AD"))
-		{
-			addList(list[currentL],list[value]);
-			continue;
-		}
-		cout << "wrong argument in test: " << command << endl;
-	}
-	return 0;
+    findMaximum10BST(tree);
+    ////////BALANCED BST////////
+    BBST treeBalanced;
+    treeBalanced.root = NULL;
+    buildBalancedTree(treeBalanced, tree);
+    cout<<"Searched with BBST: "<<endl;
+    findMaximum10BBST(treeBalanced);
+    ////////HASHING/////////
+    cout<<"Searched with HashTable: "<<endl;
+    HashTable hashT;
+    for(int i = 0; i<26; i++)
+        hashT.entries[i] = NULL;
+    insertWordsIntoHashTable(tree, hashT);
+    findMaxHash(hashT);
+    return 0;
 }

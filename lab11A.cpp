@@ -173,7 +173,6 @@ void DFSNR(Graph& g, int s){
     int counter = 0;
     vertices[counter++] = s;
     for(int j = 1; j<=g.size; j++){
-        cout<<s<<" - "<<j-1<<endl;
         if(g.matrix[s+1][j]!=9999999.9 && g.matrix[s+1][j]!=0){
             for(int q = 0; q<g.size; q++){
                 if(vertices[q]==g.matrix[0][j]){
@@ -183,7 +182,7 @@ void DFSNR(Graph& g, int s){
             }
             if(alreadyPresent==0){
                 tempStackS[counterS++] = s;
-                tempStackJ[counterJ++] = j+1;
+                tempStackJ[counterJ++] = j;
                 vertices[counter++] = j-1;
                 s = j-1;
                 j = 0;
@@ -191,14 +190,12 @@ void DFSNR(Graph& g, int s){
             alreadyPresent = 0;
         }
         if(j==g.size){
-            s = tempStackS[--counterS];
-            j = tempStackJ[--counterJ];
-            for(int k = 0; k<g.size; k++){
-                cout<<tempStackJ[k]<<",";
-            }
-            cout<<""<<endl;
-            tempStackS[counterS] = -1;
-            tempStackJ[counterJ] = -1;
+            do{
+                s = tempStackS[--counterS];
+                j = tempStackJ[--counterJ];
+                tempStackS[counterS] = -1;
+                tempStackJ[counterJ] = -1;
+            }while(j==g.size);
         }
     }
     for(int k = 0; k<g.size; k++)
